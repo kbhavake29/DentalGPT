@@ -17,8 +17,8 @@ A medical-grade MVP for a dental assistant application using RAG (Retrieval Augm
 2. **Node.js 18+**
 3. **PostgreSQL** (local or AWS RDS)
 4. **API Keys:**
-   - Zhipu AI API Key ([YOUR_ZHIPUAI_API_KEY](https://open.bigmodel.cn/)) - for GLM-4.5 and embeddings
-   - Pinecone API Key ([YOUR_PINECONE_API_KEY](https://www.pinecone.io/))
+   - Google Gemini API Key ([Get it here](https://makersuite.google.com/app/apikey)) - for text generation and embeddings
+   - Pinecone API Key ([Get it here](https://www.pinecone.io/))
 
 ## 🚀 Quick Start
 
