@@ -1,0 +1,18 @@
+# Zhipu AI API Key (for GLM-4.5 and embedding-2)
+ZHIPUAI_API_KEY=your_zhipuai_api_key_here
+
+# Pinecone API Key
+PINECONE_API_KEY=your_pinecone_api_key_here
+
+# Pinecone Index Name
+PINECONE_INDEX_NAME=dental-gpt
+
+# PostgreSQL Database Configuration
+RDS_HOST=localhost
+RDS_PORT=5432
+RDS_DATABASE=dentalgpt
+RDS_USER=postgres
+RDS_PASSWORD=postgres
+
+# Frontend API URL (for production)
+VITE_API_URL=http://localhost:8000
