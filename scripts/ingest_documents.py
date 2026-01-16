@@ -4,7 +4,7 @@ Processes PDF/text files and ingests them into Pinecone.
 """
 import os
 import sys
-import google.generativeai as genai
+import ollama
 from pinecone import Pinecone, ServerlessSpec
 from datetime import datetime
 import json
@@ -17,12 +17,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 # Configuration
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "dental-gpt")
-
-# Initialize Gemini
-genai.configure(api_key=GEMINI_API_KEY)
 
 def chunk_text(text, chunk_size=1000, overlap=200):
     """Split text into overlapping chunks."""
@@ -47,7 +45,7 @@ def ingest_text(text, metadata=None):
         print(f"Creating index {INDEX_NAME}...")
         pc.create_index(
             name=INDEX_NAME,
-            dimension=768,  # Google Gemini text-embedding-004 uses 768 dimensions
+            dimension=768,  # nomic-embed-text uses 768 dimensions
             metric="cosine",
             spec=ServerlessSpec(cloud="aws", region="us-east-1")
         )
@@ -62,12 +60,12 @@ def ingest_text(text, metadata=None):
     
     for i, chunk in enumerate(chunks):
         try:
-            # Generate embedding using Google Gemini
-            result = genai.embed_content(
-                model="models/text-embedding-004",
-                content=chunk
+            # Generate embedding using Ollama
+            embedding_response = ollama.embeddings(
+                model=OLLAMA_EMBEDDING_MODEL,
+                prompt=chunk
             )
-            embedding = result['embedding']
+            embedding = embedding_response['embedding']
             
             # Create vector ID and metadata
             vector_id = f"doc_{datetime.now().timestamp()}_{i}"

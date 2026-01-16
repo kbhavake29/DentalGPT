@@ -1,6 +1,6 @@
 # DentalGPT - Clinical Dental Assistant
 
-A medical-grade MVP for a dental assistant application using RAG (Retrieval Augmented Generation) with Zhipu AI GLM-4.5, Pinecone vector database, and PostgreSQL.
+A medical-grade MVP for a dental assistant application using RAG (Retrieval Augmented Generation) with Ollama (local LLM), Pinecone vector database, and PostgreSQL.
 
 ## 🏗️ Architecture
 
@@ -8,17 +8,17 @@ A medical-grade MVP for a dental assistant application using RAG (Retrieval Augm
 - **Backend:** FastAPI (Python)
 - **Vector DB:** Pinecone (for clinical knowledge retrieval)
 - **Relational DB:** PostgreSQL (for patient records and query history)
-- **LLM:** Zhipu AI GLM-4.5 (for text generation)
-- **Embeddings:** Zhipu AI embedding-2 (for vector embeddings)
+- **LLM:** Ollama llama3.2:3b (local, for text generation)
+- **Embeddings:** Ollama nomic-embed-text (local, for vector embeddings)
 
 ## 📋 Prerequisites
 
 1. **Python 3.9+**
 2. **Node.js 18+**
 3. **PostgreSQL** (local or AWS RDS)
-4. **API Keys:**
-   - Google Gemini API Key ([Get it here](https://makersuite.google.com/app/apikey)) - for text generation and embeddings
-   - Pinecone API Key ([Get it here](https://www.pinecone.io/))
+4. **Ollama:** Local LLM runtime ([Install here](https://ollama.com/))
+5. **API Keys:**
+   - Pinecone API Key ([Get it here](https://www.pinecone.io/)) - for vector database
 
 ## 🚀 Quick Start
 
@@ -74,7 +74,9 @@ echo "VITE_API_URL=http://localhost:8000" > .env
 Edit the `.env` file in the root directory:
 
 ```env
-ZHIPUAI_API_KEY=your_actual_zhipuai_key
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_LLM_MODEL=llama3.2:3b
+OLLAMA_EMBEDDING_MODEL=nomic-embed-text
 PINECONE_API_KEY=your_actual_pinecone_key
 PINECONE_INDEX_NAME=dental-gpt
 RDS_HOST=localhost

@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+import ollama
+import requests
 from pinecone import Pinecone, ServerlessSpec
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -28,8 +29,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Google Gemini
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Initialize Ollama
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "llama3.2:3b")
+OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 
 # Initialize Pinecone
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -39,13 +42,13 @@ index_name = os.getenv("PINECONE_INDEX_NAME", "dental-gpt")
 try:
     index = pc.Index(index_name)
 except Exception:
-    # Create index if it doesn't exist (768 dimensions for Google text-embedding-004)
-    pc.create_index(
-        name=index_name,
-        dimension=768,
-        metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region="us-east-1")
-    )
+    # Create index if it doesn't exist (768 dimensions for nomic-embed-text)
+        pc.create_index(
+            name=index_name,
+            dimension=768,
+            metric="cosine",
+            spec=ServerlessSpec(cloud="aws", region="us-east-1")
+        )
     index = pc.Index(index_name)
 
 # Database connection
@@ -84,7 +87,9 @@ async def health_check():
 async def debug_info():
     """Debug endpoint to check environment variables and connections."""
     debug_info = {
-        "gemini_api_key_set": bool(os.getenv("GEMINI_API_KEY")),
+        "ollama_base_url": OLLAMA_BASE_URL,
+        "ollama_llm_model": OLLAMA_LLM_MODEL,
+        "ollama_embedding_model": OLLAMA_EMBEDDING_MODEL,
         "pinecone_api_key_set": bool(os.getenv("PINECONE_API_KEY")),
         "pinecone_index_name": os.getenv("PINECONE_INDEX_NAME", "dental-gpt"),
         "rds_host": os.getenv("RDS_HOST", "localhost"),
@@ -112,18 +117,18 @@ async def debug_info():
 async def query_dental_assistant(request: QueryRequest):
     """
     Main query endpoint that:
-    1. Embeds the query using Google Gemini text-embedding-004
+    1. Embeds the query using Ollama nomic-embed-text
     2. Searches Pinecone for relevant context
-    3. Generates answer using Gemini 1.5 Flash
+    3. Generates answer using Ollama llama3.2:3b
     4. Logs to PostgreSQL
     """
     try:
-        # 1. Generate embedding for the query using Google Gemini
-        result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=request.query
+        # 1. Generate embedding for the query using Ollama
+        embedding_response = ollama.embeddings(
+            model=OLLAMA_EMBEDDING_MODEL,
+            prompt=request.query
         )
-        query_embedding = result['embedding']
+        query_embedding = embedding_response['embedding']
         
         # 2. Search Pinecone for relevant context
         search_results = index.query(
@@ -146,8 +151,7 @@ async def query_dental_assistant(request: QueryRequest):
         
         context = "\n\n".join(context_chunks)
         
-        # 4. Generate answer using Gemini 2.5 Flash
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        # 4. Generate answer using Ollama llama3.2:3b
         prompt = f"""You are a dental assistant AI. Answer the following question based on the provided dental guidelines and clinical knowledge.
 
 Dental Guidelines Context:
@@ -157,8 +161,11 @@ Question: {request.query}
 
 Provide a clear, concise, and clinically accurate answer. If the context doesn't contain enough information, say so. Always cite which parts of the guidelines you're referencing."""
 
-        response = model.generate_content(prompt)
-        answer = response.text
+        response = ollama.generate(
+            model=OLLAMA_LLM_MODEL,
+            prompt=prompt
+        )
+        answer = response['response']
         
         # 5. Log to PostgreSQL
         conn = get_db_connection()
@@ -205,12 +212,12 @@ async def ingest_document(request: IngestRequest):
         
         vectors = []
         for i, chunk in enumerate(chunks):
-            # Generate embedding using Google Gemini
-            result = genai.embed_content(
-                model="models/text-embedding-004",
-                content=chunk
+            # Generate embedding using Ollama
+            embedding_response = ollama.embeddings(
+                model=OLLAMA_EMBEDDING_MODEL,
+                prompt=chunk
             )
-            embedding = result['embedding']
+            embedding = embedding_response['embedding']
             
             # Prepare vector
             vector_id = f"doc_{datetime.now().timestamp()}_{i}"
@@ -307,12 +314,12 @@ async def upload_document(file: UploadFile = File(...), title: Optional[str] = N
         
         vectors = []
         for i, chunk in enumerate(chunks):
-            # Generate embedding
-            result = genai.embed_content(
-                model="models/text-embedding-004",
-                content=chunk
+            # Generate embedding using Ollama
+            embedding_response = ollama.embeddings(
+                model=OLLAMA_EMBEDDING_MODEL,
+                prompt=chunk
             )
-            embedding = result['embedding']
+            embedding = embedding_response['embedding']
             
             # Prepare vector
             vector_id = f"doc_{datetime.now().timestamp()}_{i}"
