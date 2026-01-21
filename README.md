@@ -282,13 +282,3 @@ For issues or questions, please open an issue on GitHub.
 ---
 
 **Disclaimer:** This tool is for clinical reference only and should not replace professional clinical judgment. See the footer disclaimer in the application for full details.
-
-## 🔄 Model Information
-
-This project uses **Zhipu AI GLM-4.5** for text generation and **Zhipu AI embedding-2** for vector embeddings. 
-
-- **LLM Model:** GLM-4.5 (355B parameters, 32B active per token)
-- **Embedding Model:** embedding-2 (1024 dimensions)
-- **Vector Database:** Pinecone (1024 dimensions to match embedding-2)
-
-If you need to use a different model, update the model names in `backend/main.py` and adjust the embedding dimensions accordingly.
