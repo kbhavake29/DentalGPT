@@ -267,24 +267,6 @@ For production, deploy the FastAPI backend to:
 
 Update the `VITE_API_URL` in Vercel to point to your deployed backend.
 
-## 🔒 Security Notes
-
-- **Never commit `.env` files** - They are already in `.gitignore`
-- **Remove all API keys** from code before pushing to GitHub
-- All API keys should be loaded from environment variables only
-- Use AWS Secrets Manager or similar for production API keys
-- Implement authentication for production use
-- Add rate limiting to API endpoints
-- Use HTTPS in production
-
-### Before Pushing to GitHub
-
-Make sure to:
-1. ✅ Check that all `.env` files are in `.gitignore` (already done)
-2. ✅ Remove any hardcoded API keys from code files
-3. ✅ Use environment variables for all sensitive data
-4. ✅ Review all files for any exposed credentials
-
 ## 📝 License
 
 This project is for educational/demonstration purposes.
