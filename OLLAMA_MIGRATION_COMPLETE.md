@@ -74,8 +74,8 @@ PINECONE_INDEX_NAME=dental-gpt
 RDS_HOST=localhost
 RDS_PORT=5432
 RDS_DATABASE=dentalgpt
-RDS_USER=komalbhavake
-RDS_PASSWORD=
+RDS_USER=postgres
+RDS_PASSWORD=your_password
 ```
 
 ### **4. Install Updated Dependencies**

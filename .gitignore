@@ -27,6 +27,7 @@ yarn-error.log*
 # Vite
 dist/
 .vite/
+*.timestamp-*.mjs
 
 # IDE
 .vscode/
@@ -41,3 +42,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Screen recordings (keep GIF, ignore source video)
+screen-recording/*.mov
+screen-recording/*.mp4
